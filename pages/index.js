@@ -1,209 +1,115 @@
-import Head from 'next/head'
+import { useState } from 'react'
+import * as XLSX from 'xlsx'
+import TableContainer from '@material-ui/core/TableContainer'
+import Table from '@material-ui/core/Table'
+import TableBody from '@material-ui/core/TableBody'
+import TableCell from '@material-ui/core/TableCell'
+import TableHead from '@material-ui/core/TableHead'
+import TableRow from '@material-ui/core/TableRow'
+import Paper from '@material-ui/core/Paper'
+import { Login } from '../components/Login'
 
 export default function Home() {
+  const [items, setItems] = useState([])
+
+  const readExcel = (file) => {
+    const promise = new Promise((resolve, reject) => {
+      const fileReader = new FileReader() // Nueva instancia de lectura de archivo
+      fileReader.readAsArrayBuffer(file) // Iniciar lectura de archivo
+
+      // Ejecutar cuando se cargue un archivo
+      fileReader.onload = (e) => {
+        const bufferArray = e.target.result
+
+        const wb = XLSX.read(bufferArray, { type: 'buffer' })
+
+        const wsname = wb.SheetNames[0]
+
+        const ws = wb.Sheets[wsname]
+
+        const data = XLSX.utils.sheet_to_json(ws)
+
+        resolve(data)
+        console.log(`wsname: ${wsname}`)
+        console.log(`Names: ${wb.Workbook.Names}`)
+      }
+
+      fileReader.onerror = (error) => {
+        reject(error)
+      }
+    })
+
+    // Cambiar estado
+    promise.then((d) => {
+      setItems(d)
+    })
+  }
+
+  console.log(items)
   return (
-    <div className="container">
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
-      <main>
-        <h1 className="title">
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
-
-        <p className="description">
-          Get started by editing <code>pages/index.js</code>
-        </p>
-
-        <div className="grid">
-          <a href="https://nextjs.org/docs" className="card">
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className="card">
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className="card"
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className="card"
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+    <div className="md:tw-container tw-mx-auto tw-py-5">
+      <h1 className="tw-text-2xl tw-text-center tw-mb-10">
+        Carga de archivos a Acumatica ERP
+      </h1>
+      <div className="tw-grid tw-grid-cols-4 tw-gap-4">
+        <label className="tw-col-span-1">
+          <Login />
+          <span className="tw-bg-green-500 tw-inline-block tw-rounded-lg tw-p-2">
+            Cargar
+          </span>
+          <input
+            id="upload"
+            type="file"
+            className="tw-hidden"
+            onChange={(e) => {
+              const file = e.target.files[0]
+              readExcel(file)
+            }}
+          />
+        </label>
+        <div className="tw-col-span-3">
+          {items.length > 0 ? (
+            <TableContainer component={Paper}>
+              <Table size="small" aria-label="a dense table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>OrderType</TableCell>
+                    <TableCell align="right">CustomerID</TableCell>
+                    <TableCell align="right">Ubicación</TableCell>
+                    <TableCell align="right">Referencia</TableCell>
+                    <TableCell align="right">InventoryID</TableCell>
+                    <TableCell align="right">Warehouse</TableCell>
+                    <TableCell align="right">UOM</TableCell>
+                    <TableCell align="right">Qty</TableCell>
+                    <TableCell align="right">Unit Price</TableCell>
+                    <TableCell align="right">Discount Percent</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {items.map((row, index) => (
+                    <TableRow key={index}>
+                      <TableCell component="th" scope="row">
+                        {row.OrderType}
+                      </TableCell>
+                      <TableCell align="right">{row.CustomerID}</TableCell>
+                      <TableCell align="right">{row.Ubicación}</TableCell>
+                      <TableCell align="right">{row.Referencia}</TableCell>
+                      <TableCell align="right">{row.InventoryID}</TableCell>
+                      <TableCell align="right">{row.Warehouse}</TableCell>
+                      <TableCell align="right">{row.UOM}</TableCell>
+                      <TableCell align="right">{row.Qty}</TableCell>
+                      <TableCell align="right">{row['Unit Price']}</TableCell>
+                      <TableCell align="right">
+                        {row['Discount Percent']}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          ) : null}
         </div>
-      </main>
-
-      <footer>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel" className="logo" />
-        </a>
-      </footer>
-
-      <style jsx>{`
-        .container {
-          min-height: 100vh;
-          padding: 0 0.5rem;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-        }
-
-        main {
-          padding: 5rem 0;
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-        }
-
-        footer {
-          width: 100%;
-          height: 100px;
-          border-top: 1px solid #eaeaea;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-
-        footer img {
-          margin-left: 0.5rem;
-        }
-
-        footer a {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-
-        a {
-          color: inherit;
-          text-decoration: none;
-        }
-
-        .title a {
-          color: #0070f3;
-          text-decoration: none;
-        }
-
-        .title a:hover,
-        .title a:focus,
-        .title a:active {
-          text-decoration: underline;
-        }
-
-        .title {
-          margin: 0;
-          line-height: 1.15;
-          font-size: 4rem;
-        }
-
-        .title,
-        .description {
-          text-align: center;
-        }
-
-        .description {
-          line-height: 1.5;
-          font-size: 1.5rem;
-        }
-
-        code {
-          background: #fafafa;
-          border-radius: 5px;
-          padding: 0.75rem;
-          font-size: 1.1rem;
-          font-family: Menlo, Monaco, Lucida Console, Liberation Mono,
-            DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace;
-        }
-
-        .grid {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-wrap: wrap;
-
-          max-width: 800px;
-          margin-top: 3rem;
-        }
-
-        .card {
-          margin: 1rem;
-          flex-basis: 45%;
-          padding: 1.5rem;
-          text-align: left;
-          color: inherit;
-          text-decoration: none;
-          border: 1px solid #eaeaea;
-          border-radius: 10px;
-          transition: color 0.15s ease, border-color 0.15s ease;
-        }
-
-        .card:hover,
-        .card:focus,
-        .card:active {
-          color: #0070f3;
-          border-color: #0070f3;
-        }
-
-        .card h3 {
-          margin: 0 0 1rem 0;
-          font-size: 1.5rem;
-        }
-
-        .card p {
-          margin: 0;
-          font-size: 1.25rem;
-          line-height: 1.5;
-        }
-
-        .logo {
-          height: 1em;
-        }
-
-        @media (max-width: 600px) {
-          .grid {
-            width: 100%;
-            flex-direction: column;
-          }
-        }
-      `}</style>
-
-      <style jsx global>{`
-        html,
-        body {
-          padding: 0;
-          margin: 0;
-          font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
-            Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
-            sans-serif;
-        }
-
-        * {
-          box-sizing: border-box;
-        }
-      `}</style>
+      </div>
     </div>
   )
 }
