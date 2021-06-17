@@ -1,6 +1,7 @@
 import React from 'react'
 import { useFormik } from 'formik'
 import * as Yup from 'yup'
+import axios from 'axios'
 
 export const Login = () => {
   const formik = useFormik({
@@ -11,31 +12,68 @@ export const Login = () => {
       const variables = {
         loginInput: formData,
       }
-      try {
-        console.log(variables)
-        const raw = {
-          name: formData.username,
-          password: formData.password,
-          tenant: `{{${formData.tenant}}}`,
-          locale: 'en-US',
-        }
+      console.log(variables)
+      const raw2 = JSON.stringify({
+        name: formData.username,
+        password: formData.password,
+        tenant: `{{${formData.tenant}}}`,
+        locale: 'en-US',
+      })
 
-        const requestOptions = {
-          method: 'POST',
-          body: raw,
-          redirect: 'follow',
-        }
+      const raw = `{\r\n  "name": "${formData.username}",\r\n  "password": "${formData.password}",\r\n  "tenant": "{{${formData.tenant}}}",\r\n  "locale":"en-US"\r\n}`
+      console.log(raw)
+      console.log(raw2)
+
+      const requestOptions = {
+        method: 'POST',
+        body: raw,
+        redirect: 'follow',
+        credentials: 'include',
+        // mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
+      }
+      try {
         const response = await fetch(
-          'https://soporte.clandbus.com/mejorcompra/entity/auth/login',
+          'https://soporte.clandbus.com/mejorcompra/entity/auth/login/',
           requestOptions
         )
-        console.log(response.text())
-
+        console.log(response)
+        // return response.json()
       } catch (error) {
-        console.log('error', error)
+        return error
       }
     },
   })
+
+  const handleLogout = async () => {
+    const myHeaders = new Headers()
+    myHeaders.append('Accept', 'application/json')
+    myHeaders.append('Content-Type', 'application/json')
+
+    const requestOptions = {
+      method: 'POST',
+      headers: myHeaders,
+      redirect: 'follow',
+      // mode: 'no-cors',
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+      },
+    }
+    try {
+      const response = await fetch(
+        'https://soporte.clandbus.com/mejorcompra/entity/auth/logout',
+        requestOptions
+      )
+      console.log(response)
+      // return response.json()
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   return (
     <div>
@@ -69,6 +107,13 @@ export const Login = () => {
           Entrar
         </button>
       </form>
+      <button
+        className="tw-p-2 tw-rounded-lg tw-bg-green-500 tw-text-gray-100 disabled:tw-opacity-50 tw-w-full tw-my-2"
+        type="submit"
+        onClick={handleLogout}
+      >
+        Salir
+      </button>
     </div>
   )
 }
