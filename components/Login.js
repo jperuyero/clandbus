@@ -16,11 +16,11 @@ export const Login = () => {
       const raw2 = JSON.stringify({
         name: formData.username,
         password: formData.password,
-        tenant: `{{${formData.tenant}}}`,
+        tenant: formData.tenant,
         locale: 'en-US',
       })
 
-      const raw = `{\r\n  "name": "${formData.username}",\r\n  "password": "${formData.password}",\r\n  "tenant": "{{${formData.tenant}}}",\r\n  "locale":"en-US"\r\n}`
+      const raw = `{\r\n  "name": "${formData.username}",\r\n  "password": "${formData.password}",\r\n  "tenant": "${formData.tenant}",\r\n  "locale":"en-US"\r\n}`
       console.log(raw)
       console.log(raw2)
 
@@ -29,7 +29,7 @@ export const Login = () => {
         body: raw,
         redirect: 'follow',
         credentials: 'include',
-        // mode: 'no-cors',
+        mode: 'no-cors',
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
